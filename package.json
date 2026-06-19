@@ -1,0 +1,11 @@
+{
+  "name": "commerce-b2b-headless",
+  "version": "1.0.0",
+  "description": "B2B headless commerce React UI Bundle on Salesforce Experience Cloud",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "sf-project-setup": "node scripts/sf-project-setup.mjs",
+    "setup": "node scripts/org-setup.mjs"
+  }
+}
