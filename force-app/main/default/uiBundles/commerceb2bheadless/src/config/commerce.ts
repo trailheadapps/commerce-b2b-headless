@@ -20,7 +20,12 @@ export const COMMERCE_ROUTES = {
 	CART: "/cart",
 	CHECKOUT: "/checkout",
 	ORDERS: "/orders",
+	SEARCH: (term: string) => `/search?q=${encodeURIComponent(term)}`,
 	ORDER: (idOrRefNumber: string) => `/order/${encodeURIComponent(idOrRefNumber)}`,
 	CATEGORY: (categoryId: string) => `/category/${encodeURIComponent(categoryId)}`,
 	PRODUCT: (productId: string) => `/product/${encodeURIComponent(productId)}`,
 } as const;
+
+// Query-string key the search page reads its keyword from. Kept here so the
+// search bar and the results page can't drift apart.
+export const SEARCH_QUERY_PARAM = "q";
