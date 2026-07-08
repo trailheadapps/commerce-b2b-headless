@@ -11,6 +11,7 @@ import PrivateRoute from "@/components/auth/PrivateRoute";
 import AuthAppLayout from "@/components/auth/AuthAppLayout";
 import Storefront from "@/pages/commerce/Storefront";
 import Category from "@/pages/commerce/Category";
+import Search from "@/pages/commerce/Search";
 import Product from "@/pages/commerce/Product";
 import Cart from "@/pages/commerce/Cart";
 import Checkout from "@/pages/commerce/Checkout";
@@ -68,6 +69,10 @@ export const routes: RouteObject[] = [
 					{
 						path: "category/:categoryId",
 						element: <Category />,
+					},
+					{
+						path: "search",
+						element: <Search />,
 					},
 					{
 						path: "product/:productId",

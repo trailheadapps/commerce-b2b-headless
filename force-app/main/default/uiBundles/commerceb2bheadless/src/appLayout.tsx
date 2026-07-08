@@ -5,6 +5,7 @@ import { AuthMenu } from "@/components/auth/AuthMenu";
 import { useAuth } from "@/context/AuthContext";
 import { DropdownMenuItem } from "./components/ui/dropdown-menu";
 import CartBadge from "@/components/cart/CartBadge";
+import SearchBar from "@/components/catalog/SearchBar";
 import { ROUTES } from "@/config/auth";
 import { COMMERCE_ROUTES } from "@/config/commerce";
 import { CartProvider } from "@/context/CartContext";
@@ -76,9 +77,10 @@ export default function AppLayout() {
 									))}
 								</nav>
 							)}
-							<div className="flex items-center gap-1">
+							<div className="flex items-center gap-2">
 								{showAccountControls && (
 									<>
+										<SearchBar className="hidden md:block w-56 lg:w-72" />
 										<CartBadge />
 										<AuthMenu
 											menuItems={
@@ -108,6 +110,12 @@ export default function AppLayout() {
 						</div>
 						{isOpen && (
 							<div className="md:hidden pb-3 flex flex-col gap-1">
+								{showAccountControls && (
+									<SearchBar
+										className="px-1 pb-2"
+										onSubmit={() => setIsOpen(false)}
+									/>
+								)}
 								{navigationRoutes.map((item) => (
 									<Button
 										key={item.path}
