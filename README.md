@@ -353,25 +353,6 @@ sf project deploy start \
 
 ---
 
-## Local development
-
-Run a local Vite dev server with hot-reload, proxying API calls through the org:
-
-```bash
-cd force-app/main/default/uiBundles/commerceb2bheadless
-npm run dev
-```
-
-The dev server runs on `http://localhost:5173` and uses `@salesforce/vite-plugin-ui-bundle` to proxy `/services/...` to your default org. Hot-reload works for all React/TypeScript/CSS changes.
-
-To run lint:
-
-```bash
-npm run lint
-```
-
----
-
 ## Troubleshooting
 
 **Login returns 403 "You do not have access to the Apex class named: UIBundleLogin"**
