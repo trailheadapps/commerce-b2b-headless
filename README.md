@@ -27,8 +27,7 @@ This repo is a **reference implementation only**. It is published so that Salesf
 5. [What you must change before deploying](#what-you-must-change-before-deploying)
    - [⚠️ Review all org, site & network settings before production](#5-review-all-org-site--network-settings-before-production)
 6. [Deploy to your org](#deploy-to-your-org)
-7. [Local development](#local-development)
-8. [Troubleshooting](#troubleshooting)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
