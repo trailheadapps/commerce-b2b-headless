@@ -17,6 +17,7 @@ import type {
 } from "@/api/types";
 import { parse, promotionsBase, sdkFetch } from "@/api/http";
 import { COMMERCE } from "@/config/commerce";
+import { getEffectiveAccountId } from "@/lib/commerceContext";
 
 export interface EvaluateProductsParams {
 	readonly products: readonly PromotionProductInput[];
@@ -37,13 +38,16 @@ export async function evaluateProducts(
 		// Avoid a needless server round-trip on empty PLPs.
 		return { promotionProductEvaluationResults: [] };
 	}
+	// Promo pricing is account-scoped: default to the buyer's account so
+	// entitlement-gated promotions resolve. Guests resolve to `undefined` and
+	// the field is omitted from the body (guest evaluation).
+	const effectiveAccountId =
+		params.effectiveAccountId ?? (await getEffectiveAccountId());
 	const url = `${promotionsBase()}/actions/evaluate-products`;
 	const body = {
 		products: params.products,
 		webStoreId: params.webStoreId ?? COMMERCE.WEBSTORE_ID,
-		...(params.effectiveAccountId
-			? { effectiveAccountId: params.effectiveAccountId }
-			: {}),
+		...(effectiveAccountId ? { effectiveAccountId } : {}),
 		...(params.currencyIsoCode ? { currencyIsoCode: params.currencyIsoCode } : {}),
 	};
 	const res = await sdkFetch(url, {

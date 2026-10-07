@@ -10,6 +10,7 @@
 
 import type { CalculateTaxesRequest, CalculateTaxesResponse, ProductTaxResponse } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { getEffectiveAccountId } from "@/lib/commerceContext";
 
 export interface ProductTaxParams {
 	readonly productId: string;
@@ -23,12 +24,17 @@ export interface ProductTaxParams {
 export async function getProductTax(
 	params: ProductTaxParams,
 ): Promise<ProductTaxResponse> {
+	// Tax is account-scoped like pricing — default to the buyer's account so the
+	// PDP "+X% tax" line resolves for logged-in shoppers. Guests resolve to
+	// `undefined` (dropped by `qs`) and fall back to the store default country.
+	const effectiveAccountId =
+		params.effectiveAccountId ?? (await getEffectiveAccountId());
 	const url =
 		`${base()}/taxes/products/${encodeURIComponent(params.productId)}` +
 		qs({
 			countryIsoCode: params.countryIsoCode,
 			stateIsoCode: params.stateIsoCode,
-			effectiveAccountId: params.effectiveAccountId,
+			effectiveAccountId,
 		});
 	const res = await sdkFetch(url);
 	return parse<ProductTaxResponse>(res, "Failed to load product tax");

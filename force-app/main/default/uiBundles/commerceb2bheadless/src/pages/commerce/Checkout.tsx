@@ -20,6 +20,8 @@ import PaymentForm from "@/components/checkout/PaymentForm";
 import SavedAddressPicker from "@/components/addresses/SavedAddressPicker";
 import ShippingMethods from "@/components/checkout/ShippingMethods";
 import { COMMERCE_ROUTES } from "@/config/commerce";
+import { normalizeAddress } from "@/lib/address";
+import { getAppContext } from "@/lib/commerceContext";
 import { useCart } from "@/context/CartContext";
 import { useCheckout } from "@/hooks/useCheckout";
 import { useSavedAddresses } from "@/hooks/useSavedAddresses";
@@ -94,8 +96,14 @@ export default function CheckoutPage() {
 	// the address is already in the address book).
 	const applyAddress = async (addr: CheckoutAddress) => {
 		try {
-			await setShippingAddress(addr);
-			setShippingAddressState(addr);
+			// Normalize once here — this is the single path that becomes both the
+			// delivery address AND the purchase-order billing address (see
+			// handlePayment), so both get an ISO country + no empty region
+			// regardless of how the address was entered/saved.
+			const { shippingCountries } = await getAppContext();
+			const normalized = normalizeAddress(addr, shippingCountries);
+			await setShippingAddress(normalized);
+			setShippingAddressState(normalized);
 			setStep("delivery");
 		} catch (err) {
 			// useCheckout populates `error` for the step alert; the toast adds

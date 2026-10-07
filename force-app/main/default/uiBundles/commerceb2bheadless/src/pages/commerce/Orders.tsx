@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/components/catalog/PriceDisplay";
+import { getActiveLocale } from "@/lib/locale";
 import { orderListField } from "@/api/types";
 import { COMMERCE_ROUTES } from "@/config/commerce";
 import { useOrders } from "@/hooks/useOrders";
@@ -62,7 +63,7 @@ export default function OrdersPage() {
 									</div>
 									<div className="text-xs text-muted-foreground">
 										{orderedDate
-											? new Date(orderedDate).toLocaleDateString()
+											? new Date(orderedDate).toLocaleDateString(getActiveLocale())
 											: ""}
 										{status ? ` • ${status}` : ""}
 									</div>

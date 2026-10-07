@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { DropdownMenuItem } from "./components/ui/dropdown-menu";
 import CartBadge from "@/components/cart/CartBadge";
 import SearchBar from "@/components/catalog/SearchBar";
+import MarketSwitcher from "@/components/catalog/MarketSwitcher";
 import { ROUTES } from "@/config/auth";
 import { COMMERCE_ROUTES } from "@/config/commerce";
 import { CartProvider } from "@/context/CartContext";
@@ -55,14 +56,17 @@ export default function AppLayout() {
 				<header className="sticky top-0 z-40 bg-white border-b">
 					<div className="w-full px-4 sm:px-6 lg:px-8">
 						<div className="flex items-center justify-between h-16 gap-4">
-							<Link
-								to="/"
-								className="flex items-center gap-2 text-primary font-bold text-2xl tracking-tight"
-								aria-label="Cirrus home"
-							>
-								<InfinityIcon className="h-7 w-7" strokeWidth={2.5} />
-								<span>cirrus</span>
-							</Link>
+							<div className="flex items-center gap-3">
+								<Link
+									to="/"
+									className="flex items-center gap-2 text-primary font-bold text-2xl tracking-tight"
+									aria-label="Cirrus home"
+								>
+									<InfinityIcon className="h-7 w-7" strokeWidth={2.5} />
+									<span>cirrus</span>
+								</Link>
+								{!isAuthRoute && <MarketSwitcher />}
+							</div>
 							{!isAuthRoute && (
 								<nav className="hidden md:flex items-center gap-1">
 									{navigationRoutes.map((item) => (

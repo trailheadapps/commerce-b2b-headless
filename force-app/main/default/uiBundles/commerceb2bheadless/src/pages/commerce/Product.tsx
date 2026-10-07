@@ -34,7 +34,10 @@ export default function ProductPage() {
 		if (!productId || !unitPrice) return [];
 		return [{ productId, salesPrice: unitPrice }];
 	}, [productId, unitPrice]);
-	const { data: promotions } = usePromotionEvaluation(promotionInputs);
+	const { data: promotions } = usePromotionEvaluation(
+		promotionInputs,
+		priceInfo?.currencyIsoCode,
+	);
 	const promotion = productId ? promotions?.get(productId) : undefined;
 	const adjustment = promotion?.promotionPriceAdjustmentList?.[0];
 	const hasPromo =

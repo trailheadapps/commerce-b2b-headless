@@ -11,6 +11,9 @@ export interface ProductGridProps {
 	// each card consults this map to show its promotional price + badge. When
 	// omitted, cards render the regular price (no promo overlays).
 	readonly promotions?: PromotionEvaluationMap;
+	// Page-level currency (search `productsPage.currencyIsoCode`), forwarded to
+	// each card for price formatting. See ProductCard.
+	readonly currency?: string;
 }
 
 // Responsive grid — fixed breakpoints keep the class names trivially parseable
@@ -23,6 +26,7 @@ export default function ProductGrid({
 	loading,
 	emptyMessage,
 	promotions,
+	currency,
 }: ProductGridProps) {
 	if (loading && products.length === 0) {
 		return (
@@ -47,7 +51,12 @@ export default function ProductGrid({
 	return (
 		<div className={GRID_CLASSES}>
 			{products.map((p) => (
-				<ProductCard key={p.id} product={p} promotion={promotions?.get(p.id)} />
+				<ProductCard
+					key={p.id}
+					product={p}
+					promotion={promotions?.get(p.id)}
+					currency={currency}
+				/>
 			))}
 		</div>
 	);
