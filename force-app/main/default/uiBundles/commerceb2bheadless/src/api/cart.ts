@@ -7,22 +7,34 @@ import type {
 	CartSummary,
 } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { activeLanguage } from "@/lib/locale";
 
 export async function getCartSummary(): Promise<CartSummary> {
 	// `/carts/compact-summary` is the lightweight endpoint for the nav badge,
 	// but it can 500 on some org configurations (e.g. v67 + fast cart
 	// processing). `/carts/current` returns the same CartSummary shape and is
 	// the documented fallback, so degrade to it rather than failing the badge.
-	const url = `${base()}/carts/compact-summary` + qs({ language: "en-US" });
+	const url = `${base()}/carts/compact-summary` + qs({ language: activeLanguage() });
 	const res = await sdkFetch(url);
 	if (!res.ok) return getActiveCart();
 	return parse<CartSummary>(res, "Failed to load cart summary");
 }
 
 export async function getActiveCart(): Promise<CartSummary> {
-	const url = `${base()}/carts/current` + qs({ language: "en-US" });
+	const url = `${base()}/carts/current` + qs({ language: activeLanguage() });
 	const res = await sdkFetch(url);
 	return parse<CartSummary>(res, "Failed to load cart");
+}
+
+// Delete the buyer's active cart. Used when the shopper switches market/locale:
+// a cart holds a single currency (server-derived from the market), so a cart
+// created under the old market fails validation after the switch. Safe to call
+// when there's no cart — a 404/204 is treated as success.
+export async function deleteActiveCart(): Promise<void> {
+	const url = `${base()}/carts/current`;
+	const res = await sdkFetch(url, { method: "DELETE" });
+	if (res.ok || res.status === 204 || res.status === 404) return;
+	await parse<unknown>(res, "Failed to delete cart");
 }
 
 // Max polls and delay between them while the cart recalculates. Adding /
@@ -65,7 +77,7 @@ export async function getCartItems(): Promise<CartItemsResponse> {
 			productFields: "*",
 			pageNumber: 1,
 			pageSize: 50,
-			language: "en-US",
+			language: activeLanguage(),
 			asGuest: false,
 			htmlEncode: false,
 		});
@@ -104,7 +116,7 @@ export async function addToCart(
 ): Promise<CartItemResponse> {
 	const url =
 		`${base()}/carts/current/cart-items` +
-		qs({ includeCartData: true, language: "en-US" });
+		qs({ includeCartData: true, language: activeLanguage() });
 	const res = await sdkFetch(url, {
 		method: "POST",
 		body: JSON.stringify({ productId, quantity, type: "Product" }),
@@ -118,7 +130,7 @@ export async function updateCartItem(
 ): Promise<CartItem> {
 	const url =
 		`${base()}/carts/current/cart-items/${encodeURIComponent(cartItemId)}` +
-		qs({ language: "en-US" });
+		qs({ language: activeLanguage() });
 	const res = await sdkFetch(url, {
 		method: "PATCH",
 		body: JSON.stringify({ quantity }),

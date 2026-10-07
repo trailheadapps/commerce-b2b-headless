@@ -20,21 +20,28 @@ export type UsePromotionEvaluationResult = UseAsyncResult<PromotionEvaluationMap
 
 export function usePromotionEvaluation(
 	products: readonly PromotionProductInput[] | undefined,
+	// Market currency for the visible page (e.g. search `productsPage`
+	// currencyIsoCode / PDP price currency). Passed to the evaluate call so
+	// promotion math runs in the active market's currency instead of the store
+	// default; omit to let the server fall back to the store currency.
+	currencyIsoCode?: string,
 ): UsePromotionEvaluationResult {
-	// Stable key — re-fire only when the set of (productId, salesPrice)
-	// pairs changes. Re-rendering with the same products should not trigger
-	// another evaluate call.
+	// Stable key — re-fire only when the set of (productId, salesPrice) pairs or
+	// the market currency changes. Re-rendering with the same inputs should not
+	// trigger another evaluate call.
 	const key = useMemo(() => {
 		if (!products || products.length === 0) return "";
-		return products
-			.map((p) => `${p.productId}:${p.salesPrice}`)
-			.sort()
-			.join("|");
-	}, [products]);
+		return (
+			products
+				.map((p) => `${p.productId}:${p.salesPrice}`)
+				.sort()
+				.join("|") + `#${currencyIsoCode ?? ""}`
+		);
+	}, [products, currencyIsoCode]);
 
 	return useAsync<PromotionEvaluationMap>(async () => {
 		if (!products || products.length === 0) return new Map();
-		const resp = await evaluateProducts({ products });
+		const resp = await evaluateProducts({ products, currencyIsoCode });
 		const map = new Map<string, PromotionProductEvaluationResult>();
 		for (const result of resp.promotionProductEvaluationResults ?? []) {
 			if (result.productId) map.set(result.productId, result);

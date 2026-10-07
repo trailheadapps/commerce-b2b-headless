@@ -2,6 +2,9 @@
 // When price is missing (e.g. pricing endpoint 403/404), we fall back to
 // "Request quote" — matches B2B expectations where not every buyer sees prices.
 
+import { useActiveLocale } from "@/hooks/useActiveLocale";
+import { getActiveLocale } from "@/lib/locale";
+
 export interface PriceDisplayProps {
 	readonly amount?: string | number | null;
 	readonly currency?: string | null;
@@ -9,16 +12,21 @@ export interface PriceDisplayProps {
 	readonly className?: string;
 }
 
+// `locale` (BCP-47) controls number/grouping/symbol formatting. Defaults to the
+// active locale so every caller formats for the resolved market's region (e.g.
+// German grouping `1.234,56 €`) without having to thread it through; callers
+// may still pass an explicit locale to override.
 export function formatCurrency(
 	amount: string | number | null | undefined,
 	currency: string | null | undefined,
+	locale: string = getActiveLocale(),
 ): string {
 	if (amount === null || amount === undefined || amount === "") return "";
 	const num = typeof amount === "string" ? Number(amount) : amount;
 	if (!Number.isFinite(num)) return "";
 	const iso = currency || "USD";
 	try {
-		return new Intl.NumberFormat(undefined, {
+		return new Intl.NumberFormat(locale, {
 			style: "currency",
 			currency: iso,
 		}).format(num);
@@ -33,7 +41,8 @@ export default function PriceDisplay({
 	listPrice,
 	className,
 }: PriceDisplayProps) {
-	const formatted = formatCurrency(amount, currency);
+	const locale = useActiveLocale();
+	const formatted = formatCurrency(amount, currency, locale);
 	if (!formatted) {
 		return (
 			<span className={`text-sm text-muted-foreground italic ${className ?? ""}`}>
@@ -49,7 +58,7 @@ export default function PriceDisplay({
 			<span className="font-semibold text-foreground">{formatted}</span>
 			{showStrike && (
 				<span className="text-xs text-muted-foreground line-through">
-					{formatCurrency(listNum, currency)}
+					{formatCurrency(listNum, currency, locale)}
 				</span>
 			)}
 		</span>

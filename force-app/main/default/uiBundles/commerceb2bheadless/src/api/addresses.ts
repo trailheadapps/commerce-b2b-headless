@@ -1,6 +1,7 @@
 // Address book Connect API: saved addresses on the buyer's account.
 import type { CheckoutAddress, SavedAddressesResponse } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { activeLanguage } from "@/lib/locale";
 
 // Returns the buyer's saved addresses via /accounts/current/addresses, which
 // avoids resolving the buyer's account id separately. The default address
@@ -16,7 +17,7 @@ export async function getSavedAddresses(
 			pageSize: 20,
 			shouldShowDefaultAddrFirst: true,
 			sortOrder: "CreatedDateDesc",
-			language: "en-US",
+			language: activeLanguage(),
 			asGuest: false,
 			htmlEncode: false,
 		});
@@ -36,7 +37,7 @@ export async function createSavedAddress(
 ): Promise<{ addressId?: string } & Record<string, unknown>> {
 	const url =
 		`${base()}/accounts/current/addresses` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url, {
 		method: "POST",
 		body: JSON.stringify({
@@ -71,7 +72,7 @@ export async function updateSavedAddress(
 ): Promise<void> {
 	const url =
 		`${base()}/accounts/current/addresses/${encodeURIComponent(addressId)}` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url, {
 		method: "PATCH",
 		body: JSON.stringify({

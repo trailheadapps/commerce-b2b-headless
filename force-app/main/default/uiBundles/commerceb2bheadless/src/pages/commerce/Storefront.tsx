@@ -89,6 +89,7 @@ export default function Storefront() {
 						)}
 						<ProductGrid
 							products={products}
+							currency={searchData?.productsPage?.currencyIsoCode}
 							loading={catLoading || (!!featuredCategoryId && searchLoading)}
 							emptyMessage={
 								featuredCategoryId

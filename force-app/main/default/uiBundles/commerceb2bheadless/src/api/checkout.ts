@@ -1,6 +1,7 @@
 // Checkout Connect API: start, address, delivery, payment, place order.
 import type { CheckoutAddress, CheckoutState } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { activeLanguage } from "@/lib/locale";
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -199,7 +200,7 @@ export async function getActiveCheckout(): Promise<CheckoutState | null> {
 export async function startCheckout(cartId?: string): Promise<CheckoutState> {
 	const url =
 		`${base()}/checkouts` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url, {
 		method: "PUT",
 		body: JSON.stringify({
@@ -298,7 +299,7 @@ export interface PlaceOrderResult {
 export async function placeOrder(): Promise<PlaceOrderResult> {
 	const url =
 		`${base()}/checkouts/active/orders` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url, { method: "POST" });
 	const body = await parse<{
 		orderReferenceNumber?: string;

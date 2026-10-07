@@ -1,6 +1,7 @@
 // Orders Connect API: order summaries list + lookup.
 import type { OrderSummaryDetail, OrderSummaryListResponse } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { activeLanguage } from "@/lib/locale";
 
 // List the buyer's order summaries, newest first.
 //   GET /commerce/webstores/{id}/order-summaries
@@ -17,7 +18,7 @@ export async function listOrderSummaries(
 			pageSize,
 			fields:
 				"OrderNumber,OrderedDate,Status,TotalAmount,GrandTotalAmount,CurrencyIsoCode",
-			language: "en-US",
+			language: activeLanguage(),
 			asGuest: false,
 			htmlEncode: false,
 		});
@@ -36,7 +37,7 @@ export async function getOrderSummary(
 ): Promise<OrderSummaryDetail> {
 	const url =
 		`${base()}/order-summaries/actions/lookup` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url, {
 		method: "POST",
 		body: JSON.stringify({ orderSummaryIdOrRefNumber }),

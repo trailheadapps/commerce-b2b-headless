@@ -70,7 +70,10 @@ export default function SearchPage() {
 				salesPrice: p.prices!.unitPrice as string,
 			}));
 	}, [products]);
-	const { data: promotions } = usePromotionEvaluation(promotionInputs);
+	const { data: promotions } = usePromotionEvaluation(
+		promotionInputs,
+		data?.productsPage?.currencyIsoCode,
+	);
 
 	if (term === "") {
 		return (
@@ -113,6 +116,7 @@ export default function SearchPage() {
 					)}
 					<ProductGrid
 						products={products}
+						currency={data?.productsPage?.currencyIsoCode}
 						loading={loading}
 						promotions={promotions ?? undefined}
 						emptyMessage={`No products match “${term}”.`}

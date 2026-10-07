@@ -4,6 +4,7 @@
 // commerce-domain calls.
 
 export * from "./catalog";
+export * from "./context";
 export * from "./cart";
 export * from "./checkout";
 export * from "./orders";

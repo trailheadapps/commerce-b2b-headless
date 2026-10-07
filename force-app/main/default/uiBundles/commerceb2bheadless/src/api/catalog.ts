@@ -8,12 +8,14 @@ import type {
 	ProductSearchResponse,
 } from "@/api/types";
 import { base, parse, qs, sdkFetch } from "@/api/http";
+import { getEffectiveAccountId } from "@/lib/commerceContext";
+import { activeLanguage } from "@/lib/locale";
 
 export async function getProductCategories(
 	parentId?: string,
 ): Promise<ProductCategoriesResponse> {
 	const params: Record<string, string | number | boolean> = {
-		language: "en-US",
+		language: activeLanguage(),
 		asGuest: false,
 		htmlEncode: false,
 	};
@@ -31,7 +33,7 @@ function categoryName(c: { fields?: { Name?: string | null } }): string {
 export async function getCategoryPath(categoryId: string): Promise<ProductCategoryPathResponse> {
 	const url =
 		`${base()}/product-category-path/product-categories/${encodeURIComponent(categoryId)}` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, htmlEncode: false });
 	const res = await sdkFetch(url);
 	return parse<ProductCategoryPathResponse>(res, "Failed to load category path");
 }
@@ -86,7 +88,7 @@ export async function searchProducts(
 			values: r.values,
 		}));
 	}
-	const url = `${base()}/search/product-search` + qs({ language: "en-US" });
+	const url = `${base()}/search/product-search` + qs({ language: activeLanguage() });
 	const res = await sdkFetch(url, {
 		method: "POST",
 		body: JSON.stringify(body),
@@ -94,16 +96,34 @@ export async function searchProducts(
 	return parse<ProductSearchResponse>(res, "Failed to search products");
 }
 
-export async function getProduct(productId: string): Promise<ProductDetail> {
+// `effectiveAccountId` scopes the response to the buyer's account (entitlement
+// + contract pricing). Defaults to the logged-in buyer's account from
+// session-context; pass an explicit value only to override. Omitted for guests
+// (`undefined` → dropped by `qs`), which keeps guest browsing working.
+export async function getProduct(
+	productId: string,
+	effectiveAccountId?: string,
+): Promise<ProductDetail> {
+	const accountId = effectiveAccountId ?? (await getEffectiveAccountId());
 	const url =
 		`${base()}/products/${encodeURIComponent(productId)}` +
-		qs({ language: "en-US", asGuest: false, htmlEncode: false });
+		qs({ language: activeLanguage(), asGuest: false, effectiveAccountId: accountId, htmlEncode: false });
 	const res = await sdkFetch(url);
 	return parse<ProductDetail>(res, "Failed to load product");
 }
 
-export async function getProductPrice(productId: string): Promise<ProductPrice> {
-	const url = `${base()}/pricing/products/${encodeURIComponent(productId)}`;
+// Without `effectiveAccountId` the pricing endpoint evaluates in a guest
+// context and returns ITEM_NOT_FOUND (404) for buyer-entitled products, which
+// surfaces as "Pricing unavailable". Default it to the buyer's account so
+// logged-in shoppers get their contract/market price.
+export async function getProductPrice(
+	productId: string,
+	effectiveAccountId?: string,
+): Promise<ProductPrice> {
+	const accountId = effectiveAccountId ?? (await getEffectiveAccountId());
+	const url =
+		`${base()}/pricing/products/${encodeURIComponent(productId)}` +
+		qs({ language: activeLanguage(), effectiveAccountId: accountId });
 	const res = await sdkFetch(url);
 	if (res.status === 403 || res.status === 404) {
 		return {

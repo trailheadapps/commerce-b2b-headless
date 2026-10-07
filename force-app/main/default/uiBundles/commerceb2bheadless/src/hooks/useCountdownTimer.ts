@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { getActiveLocale } from "@/lib/locale";
 
 /**
  * Accessibility configuration for countdown timer
@@ -69,7 +70,7 @@ function formatTimeRemaining(seconds: number): string {
 	const secs = seconds % 60;
 
 	// Use Intl.NumberFormat for zero-padding with internationalization
-	const formatter = new Intl.NumberFormat(navigator.language, {
+	const formatter = new Intl.NumberFormat(getActiveLocale(), {
 		minimumIntegerDigits: 2,
 		useGrouping: false,
 	});
@@ -105,7 +106,7 @@ function formatAccessibilityAnnouncement(seconds: number): string {
 	if (typeof Intl !== "undefined" && "DurationFormat" in Intl) {
 		try {
 			// @ts-expect-error - DurationFormat is not yet in TypeScript lib
-			const formatter = new Intl.DurationFormat(navigator.language, { style: "long" });
+			const formatter = new Intl.DurationFormat(getActiveLocale(), { style: "long" });
 			return formatter.format({ minutes, seconds: secs });
 		} catch {
 			// Fallback to manual formatting

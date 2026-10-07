@@ -54,7 +54,10 @@ export default function CategoryPage() {
 				salesPrice: p.prices!.unitPrice as string,
 			}));
 	}, [products]);
-	const { data: promotions } = usePromotionEvaluation(promotionInputs);
+	const { data: promotions } = usePromotionEvaluation(
+		promotionInputs,
+		data?.productsPage?.currencyIsoCode,
+	);
 
 	return (
 		<div className="w-full px-4 sm:px-6 lg:px-8 py-8">
@@ -84,6 +87,7 @@ export default function CategoryPage() {
 					)}
 					<ProductGrid
 						products={products}
+						currency={data?.productsPage?.currencyIsoCode}
 						loading={loading}
 						promotions={promotions ?? undefined}
 					/>

@@ -15,9 +15,13 @@ export interface ProductCardProps {
 	// it brings the price below `salesPrice`, the card shows the promotional
 	// price (with the original struck through) and a "Save X%" badge.
 	readonly promotion?: PromotionProductEvaluationResult;
+	// Page-level currency (from the search response's `productsPage`). Search
+	// results don't carry a per-product currency, so this is the fallback used
+	// for price formatting — without it prices default to USD.
+	readonly currency?: string;
 }
 
-export default function ProductCard({ product, promotion }: ProductCardProps) {
+export default function ProductCard({ product, promotion, currency }: ProductCardProps) {
 	const name = asText(product.name) || asText(product.fields?.Name) || "Unnamed product";
 	const sku = asText(product.fields?.StockKeepingUnit);
 	const image = product.defaultImage?.url;
@@ -53,7 +57,7 @@ export default function ProductCard({ product, promotion }: ProductCardProps) {
 						<PriceDisplay
 							amount={displayAmount}
 							listPrice={displayListPrice}
-							currency={product.prices?.currencyIsoCode}
+							currency={product.prices?.currencyIsoCode ?? currency}
 						/>
 						{hasPromo && (
 							<PromotionBadge

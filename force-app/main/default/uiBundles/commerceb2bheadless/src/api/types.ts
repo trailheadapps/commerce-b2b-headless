@@ -86,6 +86,10 @@ export interface ProductSearchResponse {
 		total?: number;
 		pageSize?: number;
 		currentPage?: number;
+		// Currency for ALL prices on the page. The per-product `prices` objects do
+		// NOT carry a currency — it lives here, at the page level. Callers must
+		// thread this down to price rendering, else formatting defaults to USD.
+		currencyIsoCode?: string;
 		products?: readonly ProductSearchItem[];
 	};
 	readonly facets?: readonly ProductSearchFacet[];
@@ -665,5 +669,132 @@ export interface PromotionProductEvaluationResult {
 
 export interface PromotionProductEvaluationResponse {
 	readonly promotionProductEvaluationResults?: readonly PromotionProductEvaluationResult[];
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Context — raw wire shapes for
+//   GET /commerce/webstores/{id}/application-context   (store-level config)
+//   GET /commerce/webstores/{id}/session-context       (buyer session)
+//
+// Fetched once per page load and cached by the singleton in
+// `@/lib/commerceContext`. Kept loose (all optional, index signature) because
+// the fields returned vary by org config, entitlement, and API version — read
+// them through the `toAppContext()` / `toSessionContext()` transforms.
+// ────────────────────────────────────────────────────────────────────────────
+
+// A configured commerce market and its locale→currency mapping (e.g.
+// { en_US: "USD", fr_CA: "USD" }).
+export interface MarketData {
+	readonly marketId?: string;
+	readonly localeCurrencyMap?: Readonly<Record<string, string>>;
+}
+
+// One selectable status value for orders / quotes.
+export interface StatusValue {
+	readonly apiName?: string;
+	readonly displayValue?: string;
+}
+
+export interface PaymentConfigurationData {
+	readonly paymentMethodSetDevName?: string;
+	readonly paymentMethodManualCaptureEnabled?: boolean;
+	readonly businessAchEnabled?: boolean;
+}
+
+export interface CheckoutSettingsData {
+	readonly isManagedCheckoutEnabled?: boolean;
+	readonly isMngCheckoutAutoPublished?: boolean;
+	readonly shippingMethodsEnabled?: boolean;
+	readonly paymentConfiguration?: PaymentConfigurationData;
+}
+
+export interface GiftingConfig {
+	readonly isGiftingEnabled?: boolean;
+	readonly isGiftMessageEnabled?: boolean;
+	readonly isGiftWrapEnabled?: boolean;
+}
+
+export interface SubscriptionConfig {
+	readonly subscriptionPlusEnabled?: boolean;
+	readonly rlmSubscriptionEnabled?: boolean;
+}
+
+export interface ProductConfig {
+	readonly configuratorFlowApiName?: string;
+}
+
+export interface InventoryConfigurationData {
+	readonly isInventoryEnabled?: boolean;
+	readonly inventoryDefaultSource?: {
+		readonly locationSourceId?: string;
+		readonly reservationInSeconds?: number;
+		readonly webStoreInventoryLocationSourceType?: string;
+		readonly webStoreInventorySourceId?: string;
+	};
+}
+
+export interface AppContextProperties {
+	readonly highScaleCartEnabled?: boolean;
+	readonly shopperCopilotUIEnabled?: boolean;
+	readonly paymentsLegacyFormsEnabled?: boolean;
+}
+
+// Raw response of GET /application-context.
+export interface AppContextData {
+	readonly guestBrowsingEnabled?: boolean;
+	readonly guestCartEnabled?: boolean;
+	readonly guestCheckoutEnabled?: boolean;
+	// Legacy flag; superseded by `guestCheckoutEnabled`.
+	readonly guestCartCheckoutEnabled?: boolean;
+	readonly splitShipmentEnabled?: boolean;
+	readonly cartCalculateEnabled?: boolean;
+	readonly placeOrderV2Enabled?: boolean;
+	readonly commerceMultiCartEnabled?: boolean;
+	readonly hideShippingAddress?: boolean;
+	readonly shopperConsentEnabled?: boolean;
+	readonly skipPhoneNumberValidationEnabled?: boolean;
+	readonly usesSingleEntitlementPolicy?: boolean;
+	readonly usesUniversalPricebooks?: boolean;
+	readonly taxType?: string;
+	readonly country?: string;
+	readonly shippingCountries?: readonly string[];
+	readonly defaultCurrency?: string;
+	readonly supportedCurrencies?: readonly string[];
+	// When true, currency is driven by the buyer's session, not the store default.
+	readonly sessionDrivenCurrency?: boolean;
+	readonly managedCheckoutVersion?: string;
+	readonly markets?: readonly MarketData[];
+	readonly orderStatuses?: readonly StatusValue[];
+	readonly quoteStatuses?: readonly StatusValue[];
+	readonly checkoutSettings?: CheckoutSettingsData;
+	readonly giftingConfig?: GiftingConfig;
+	readonly subscriptionConfig?: SubscriptionConfig;
+	readonly productConfig?: ProductConfig;
+	readonly inventoryConfiguration?: InventoryConfigurationData;
+	readonly propertiesEx?: AppContextProperties;
+	// Forward-compat: other org-dependent flags/objects may appear.
+	readonly [key: string]: unknown;
+}
+
+// User profile block nested inside the session-context response.
+export interface SessionUserProfile {
+	readonly userName?: string;
+	readonly firstName?: string;
+	readonly lastName?: string;
+	readonly email?: string;
+}
+
+// Raw response of GET /session-context.
+export interface SessionContextData {
+	readonly userId?: string;
+	readonly userName?: string;
+	readonly userType?: string;
+	// `false` for an authenticated buyer, `true`/absent for a guest.
+	readonly guestUser?: boolean;
+	readonly accountId?: string | null;
+	readonly accountName?: string | null;
+	readonly profile?: SessionUserProfile;
+	readonly buyerGroups?: ReadonlyArray<{ id: string; name: string }>;
+	readonly [key: string]: unknown;
 }
 

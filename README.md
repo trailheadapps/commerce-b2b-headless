@@ -332,6 +332,30 @@ sf data create record --target-org my-demo-org \
 # (PermissionSetId: SELECT Id FROM PermissionSet WHERE Name = 'UIBundleApexAccess')
 ```
 
+### Guest browsing & the commerce context APIs
+
+The storefront calls the Commerce **application-context** and **session-context** endpoints (and, for guest browsing, catalog/pricing) as the site's **guest user** — before anyone logs in. `UIBundleApexAccess` only grants the *auth* Apex classes; it does **not** grant commerce entitlement, so it is not enough on its own.
+
+For those guest calls to succeed, the headless site's guest user must be assigned the **same commerce permission set(s) as the guest user of the LWR (Aura) B2B Commerce store that owns the same WebStore**. In this reference org that means:
+
+- **Headless site (this repo):** `commerceb2bheadless`
+- **LWR store sharing the WebStore:** *SDO – B2B Commerce Enhanced* ("b2b enhanced")
+
+Inspect the LWR store guest user's permission sets, then assign the same commerce permission set to the headless site's guest user:
+
+```bash
+# What commerce permission set does the LWR store's guest user hold?
+sf data query --target-org <alias> \
+  --query "SELECT PermissionSet.Name FROM PermissionSetAssignment WHERE Assignee.Name = 'Site Guest User, <LWR site name>'"
+
+# Assign that same permission set to the headless (commerceb2bheadless) guest user
+sf data create record --target-org <alias> \
+  --sobject PermissionSetAssignment \
+  --values "AssigneeId=<commerceb2bheadless GuestUserId> PermissionSetId=<commerce guest PermissionSetId>"
+```
+
+Without it, guest `application-context` / `session-context` / catalog calls fail with `INSUFFICIENT_ACCESS` and the storefront won't render for anonymous visitors.
+
 ### Deploy a subset
 
 ```bash
