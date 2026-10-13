@@ -16,8 +16,11 @@
 //   1. SFDC_ENV locale/lang fields, if the LWR runtime exposes them.
 //   2. A `xx-YY` / `xx_YY` locale segment in the URL path (LWR Experience sites
 //      carry the active site language as a path segment, e.g. /de-DE/…).
-//   3. navigator.language.
-//   4. DEFAULT_LOCALE.
+//   3. DEFAULT_LOCALE.
+//
+// navigator.language is deliberately NOT consulted: the browser's language
+// (e.g. en-GB) is rarely one of the store's market locales, and the server
+// rejects a `language` its markets don't list (e.g. "DANISH isn't supported").
 //
 // NOTE (Part 1 dependency — see docs/markets-enablement-plan.md): where the
 // active locale actually surfaces for THIS bundle is only confirmable once the
@@ -103,16 +106,9 @@ function fromUrlPath(): string | undefined {
 	return undefined;
 }
 
-function fromNavigator(): string | undefined {
-	const lang = typeof navigator !== "undefined" ? navigator.language : undefined;
-	return lang && lang.trim() !== "" ? normalizeToBcp47(lang) : undefined;
-}
-
 // Resolve the active locale (BCP-47). Pure read — safe to call anywhere.
 export function getActiveLocale(): string {
-	return (
-		fromStorage() ?? fromSfdcEnv() ?? fromUrlPath() ?? fromNavigator() ?? DEFAULT_LOCALE
-	);
+	return fromStorage() ?? fromSfdcEnv() ?? fromUrlPath() ?? DEFAULT_LOCALE;
 }
 
 // The value to send as the Connect `language` query param. On this headless
