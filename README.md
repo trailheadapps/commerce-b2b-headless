@@ -332,9 +332,11 @@ sf data create record --target-org my-demo-org \
 # (PermissionSetId: SELECT Id FROM PermissionSet WHERE Name = 'UIBundleApexAccess')
 ```
 
-### Guest browsing & the commerce context APIs
+### Commerce context APIs (markets) — guest browsing not supported yet
 
-The storefront calls the Commerce **application-context** and **session-context** endpoints (and, for guest browsing, catalog/pricing) as the site's **guest user** — before anyone logs in. `UIBundleApexAccess` only grants the *auth* Apex classes; it does **not** grant commerce entitlement, so it is not enough on its own.
+> **Note:** This reference app does **not** support guest browsing yet. Shoppers must log in before they can browse the catalog, see pricing, or check out.
+
+The storefront calls the Commerce **application-context** and **session-context** endpoints to resolve **Commerce Markets** (the locale → currency mapping that drives the market switcher, the Connect `language` param, and currency formatting). These calls are made as the site's **guest user** — before anyone logs in. `UIBundleApexAccess` only grants the *auth* Apex classes; it does **not** grant commerce entitlement, so it is not enough on its own.
 
 For those guest calls to succeed, the headless site's guest user must be assigned the **same commerce permission set(s) as the guest user of the LWR (Aura) B2B Commerce store that owns the same WebStore**. In this reference org that means:
 
@@ -354,7 +356,7 @@ sf data create record --target-org <alias> \
   --values "AssigneeId=<commerceb2bheadless GuestUserId> PermissionSetId=<commerce guest PermissionSetId>"
 ```
 
-Without it, guest `application-context` / `session-context` / catalog calls fail with `INSUFFICIENT_ACCESS` and the storefront won't render for anonymous visitors.
+Without it, guest `application-context` / `session-context` calls fail with `INSUFFICIENT_ACCESS` and markets can't be resolved before login. Guest catalog/pricing access isn't covered here, since guest browsing isn't supported yet.
 
 ### Deploy a subset
 
@@ -396,4 +398,5 @@ The buyer's account isn't entitled to a price book. Confirm the buyer's Account 
 ## Limitations
 
 - **Hardcoded org-specific values** — The WebStore ID (`commerce.ts`) and Buyer Group ID (`UIBundleRegistration.cls`) must be manually configured by an admin before deployment. There is no auto-discovery at this time.
+- **Guest browsing not supported yet** — Anonymous shoppers can't browse the catalog or see pricing; buyers must log in. The guest user only calls `application-context` / `session-context` to resolve markets.
 - **Dual-network requirement** — The React storefront should be the only active store running on a single Network. Currently it requires its own Network separate from the legacy LWR Commerce store Network, so both coexist in the org. This will be consolidated in a future release.
